@@ -1,0 +1,460 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "earthworm",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -480,
+        16
+      ],
+      "id": "a1dcf666-fc30-434e-80e3-bd0a5ffe80a5",
+      "name": "Webhook",
+      "webhookId": "1fe8c451-3451-45cb-9e1e-6c612fcc8b1b"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.audio_file ? true : false }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "7909450a-4e1d-4c69-9ac8-7954eb68bdf2"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "AUDIO"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c17e7efd-f9ce-4769-8e35-1ee52069a653",
+                    "leftValue": "={{ $json.body.image_base64 ? true : false }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "IMAGE"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": "extra",
+          "allMatchingOutputs": true
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -192,
+        32
+      ],
+      "id": "684c2d42-3137-4eed-b8fc-4d2862a9b920",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.text }}",
+        "options": {
+          "systemMessage": "You are Shamil, an expert agricultural AI assistant for the Earthworm platform. You help farmers in India with crop diseases, soil health, weather planning, pest control, and general farming advice.\n\nLANGUAGE RULE (CRITICAL):\n- Detect the language from the user's message.\n- ALWAYS reply in the SAME language the farmer used.\n- If they wrote in Tamil, reply fully in Tamil script.\n- If they wrote in English, reply in English.\n- Never mix languages unless the farmer does.\n\nTONE:\n- Be warm, practical, and easy to understand.\n- Avoid jargon. Farmers need actionable advice.\n- Keep replies under 150 words unless the question demands more.\n\nCONTEXT:\n- The farmer is likely in Tamil Nadu, India.\n- Common crops: paddy, sugarcane, banana, turmeric, cotton, groundnut."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        400
+      ],
+      "id": "c6fd1c2e-4333-4c02-b735-50b031c54dcb",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        224,
+        544
+      ],
+      "id": "39974b42-d070-4f5f-9bc4-75054d0d0563",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "Pp4yYS2q9jlo3caR",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.session_id }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        320,
+        544
+      ],
+      "id": "05ab8239-da4d-4a38-b01a-27aa37aa6c60",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"output\": \"{{ $json.output }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        496,
+        400
+      ],
+      "id": "439e9caa-8c1a-480b-a772-8c6e2be787f6",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"llama-3.2-11b-vision-preview\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": [\n        {\n          \"type\": \"text\",\n          \"text\": \"You are Shamil, an expert agricultural AI. Analyze this crop or farm image. Tell the farmer: 1) What you see 2) Any problems like disease, pest, or deficiency 3) What action to take. Be practical and simple. Reply in this language: {{ $json.body.language }}\"\n        },\n        {\n          \"type\": \"image_url\",\n          \"image_url\": {\n            \"url\": \"data:image/jpeg;base64,{{ $json.body.image_base64 }}\"\n          }\n        }\n      ]\n    }\n  ],\n  \"max_tokens\": 500\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        256,
+        208
+      ],
+      "id": "408a41b0-41b1-4151-a53e-4261f3e4ba7e",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "PvApJxsvjh3dGujg",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"output\": \"{{ $json.choices[0].message.content }}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        432,
+        208
+      ],
+      "id": "0997d303-ca10-41be-aa0e-9e742617e71f",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/audio/transcriptions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "audio_base64"
+            },
+            {
+              "name": "model",
+              "value": "whisper-large-v3"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        16,
+        -64
+      ],
+      "id": "3d1a6457-f4d4-48a6-bb6a-8358af7a8a2e",
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "IRM6ovnWd9ry0CW0",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "You are Varun, an expert agricultural AI assistant for the Earthworm platform. You help farmers in India with crop diseases, soil health, weather planning, pest control, and general farming advice.\n\nLANGUAGE RULE (CRITICAL):\n- Detect the language from the user's message.\n- ALWAYS reply in the SAME language the farmer used.\n- If they wrote in Tamil, reply fully in Tamil script.\n- If they wrote in English, reply in English.\n- Never mix languages unless the farmer does.\n\nTONE:\n- Be warm, practical, and easy to understand.\n- Avoid jargon. Farmers need actionable advice.\n- Keep replies under 150 words unless the question demands more.\n\nCONTEXT:\n- The farmer is likely in Tamil Nadu, India.\n- Common crops: paddy, sugarcane, banana, turmeric, cotton, groundnut."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        288,
+        -144
+      ],
+      "id": "b2b73c54-4840-4ef6-b861-4e0d6c70789e",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        288,
+        32
+      ],
+      "id": "2f7cefe4-0de8-4c42-8e1f-2a7068bead9e",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "Pp4yYS2q9jlo3caR",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "= {{ $('Webhook').item.json.session_id }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        384,
+        32
+      ],
+      "id": "159d8214-3163-4142-a8a8-a23dc7b4ecd7",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"assistant_reply\": \"{{ $json.output }}\",\n  \"type\": \"audio_processing_complete\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        640,
+        -144
+      ],
+      "id": "d8ce10ad-c527-4b9d-ac56-93b0f73b777f",
+      "name": "Respond to Webhook2"
+    }
+  ],
+  "pinData": {
+    "Respond to Webhook2": [
+      {
+        "json": {
+          "name": "First item",
+          "code": 1
+        }
+      },
+      {
+        "json": {
+          "name": "Second item",
+          "code": 2
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "bd2449e7-dee0-46cc-a446-5d82837d8a4d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e4f2b15f78d4788a51706e57623d7bda7ec5f518dc90b1b5f0e13d5f48a01a4a"
+  },
+  "id": "fqc9epHbGjp5oYN2",
+  "tags": []
+}
