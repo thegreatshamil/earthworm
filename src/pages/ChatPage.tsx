@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, Sprout, Clock, X, PanelLeft } from 'lucide-react';
+import { MessageSquare, Sprout, Clock, X, PanelLeft, Plus, Trash2 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { chatService } from '@/services/chatService';
 import ChatMessage from '@/components/chat/ChatMessage';
@@ -135,6 +135,23 @@ const ChatPage: React.FC<ChatPageProps> = ({ onPageChange: _onPageChange }) => {
     }
   }, [sessions]);
 
+  const handleDeleteSession = useCallback((e: React.MouseEvent, sessionId: string) => {
+    e.stopPropagation();
+    chatService.deleteChatSession(sessionId);
+    setSessions(prev => prev.filter(s => s.id !== sessionId));
+    if (currentSession.id === sessionId) {
+      handleNewChat();
+    }
+  }, [currentSession.id, handleNewChat]);
+
+  const handleClearAll = useCallback(() => {
+    if (window.confirm(t('clearChatConfirm'))) {
+      chatService.clearAllHistory();
+      setSessions([]);
+      handleNewChat();
+    }
+  }, [handleNewChat, t]);
+
   const formatDate = (date: Date) => {
     const now = new Date();
     const sessionDate = new Date(date);
@@ -183,14 +200,27 @@ const ChatPage: React.FC<ChatPageProps> = ({ onPageChange: _onPageChange }) => {
                 </div>
                 <span className="text-white/90 text-sm font-medium">{t('previousConversations')}</span>
               </div>
-              <motion.button
-                onClick={() => setShowHistory(false)}
-                whileHover={{ scale: 1.1, rotate: 90 }}
-                whileTap={{ scale: 0.9 }}
-                className="p-2 rounded-xl hover:bg-white/10 text-white/50 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </motion.button>
+              <div className="flex items-center gap-1">
+                {sessions.length > 0 && (
+                  <motion.button
+                    onClick={handleClearAll}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="p-2 rounded-xl hover:bg-red-500/10 text-red-400/50 hover:text-red-400 transition-colors"
+                    title={t('clearChat')}
+                  >
+                    <X className="w-4 h-4" />
+                  </motion.button>
+                )}
+                <motion.button
+                  onClick={() => setShowHistory(false)}
+                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="p-2 rounded-xl hover:bg-white/10 text-white/50 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </motion.button>
+              </div>
             </div>
 
             {/* New Chat Button */}
@@ -207,7 +237,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ onPageChange: _onPageChange }) => {
                   shadow-lg shadow-[#f4d03f]/20
                 "
               >
-                <MessageSquare className="w-4 h-4" />
+                <Plus className="w-4 h-4" />
                 <span>{t('newChat')}</span>
               </motion.button>
             </div>
@@ -227,29 +257,47 @@ const ChatPage: React.FC<ChatPageProps> = ({ onPageChange: _onPageChange }) => {
                 </motion.div>
               ) : (
                 <div className="space-y-1">
-                  {sessions.map((session, index) => (
-                    <motion.button
-                      key={session.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      whileHover={{ x: 4, backgroundColor: 'rgba(255,255,255,0.06)' }}
-                      onClick={() => handleSelectSession(session.id)}
-                      className={`
-                        w-full text-left px-4 py-3 rounded-xl
-                        transition-all duration-200
-                        ${currentSession.id === session.id
-                          ? 'bg-gradient-to-r from-[#f4d03f]/15 to-transparent text-white border border-[#f4d03f]/30'
-                          : 'text-white/60 hover:text-white/80 border border-transparent'
-                        }
-                      `}
-                    >
-                      <p className="text-sm font-medium truncate">{session.title}</p>
-                      <p className="text-xs text-white/35 mt-0.5">
-                        {formatDate(session.updatedAt)} • {session.messages.length} messages
-                      </p>
-                    </motion.button>
-                  ))}
+                  <AnimatePresence mode="popLayout">
+                    {sessions.map((session, index) => (
+                      <motion.div
+                        key={session.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="group relative"
+                      >
+                        <button
+                          onClick={() => handleSelectSession(session.id)}
+                          className={`
+                            w-full text-left px-4 py-3 rounded-xl
+                            transition-all duration-200
+                            ${currentSession.id === session.id
+                              ? 'bg-gradient-to-r from-[#f4d03f]/15 to-transparent text-white border border-[#f4d03f]/30'
+                              : 'text-white/60 hover:text-white/80 border border-transparent hover:bg-white/5'
+                            }
+                          `}
+                        >
+                          <p className="text-sm font-medium truncate pr-6">{session.title}</p>
+                          <p className="text-xs text-white/35 mt-0.5">
+                            {formatDate(session.updatedAt)} • {session.messages.length} messages
+                          </p>
+                        </button>
+                        
+                        <button
+                          onClick={(e) => handleDeleteSession(e, session.id)}
+                          className="
+                            absolute right-2 top-1/2 -translate-y-1/2
+                            p-2 rounded-lg opacity-0 group-hover:opacity-100
+                            hover:bg-red-500/20 text-white/30 hover:text-red-400
+                            transition-all duration-200
+                          "
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
                 </div>
               )}
             </div>

@@ -47,12 +47,12 @@ const LanguageToggle: React.FC = () => {
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
             className="
-              absolute bottom-full left-0 mb-2 w-56
-              glass-strong rounded-2xl overflow-hidden
-              shadow-2xl z-50
+              absolute bottom-full left-0 mb-2 w-64
+              glass-strong rounded-2xl shadow-2xl z-[100]
+              overflow-hidden
             "
           >
-            <div className="p-2">
+            <div className="p-2 max-h-[300px] overflow-y-auto overscroll-contain">
               <p className="text-xs text-white/40 px-3 py-2 uppercase tracking-wider">
                 {t('selectLanguage')}
               </p>

@@ -66,9 +66,11 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading = false, disabl
       };
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        const mimeType = mediaRecorder.mimeType || 'audio/webm';
+        const audioBlob = new Blob(audioChunks, { type: mimeType });
         const audioUrl = URL.createObjectURL(audioBlob);
-        console.log('Recording stopped, audio URL:', audioUrl);
+        console.log('Recording stopped, audio URL:', audioUrl, 'MimeType:', mimeType);
+        
         // Convert recorded audio to base64 so it can be sent to the backend
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -92,7 +94,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading = false, disabl
       console.error('Error accessing microphone:', error);
       alert('Could not access microphone. Please check permissions.');
     }
-  }, []);
+  }, [t]);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
@@ -106,6 +108,10 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading = false, disabl
     }
   }, [isRecording]);
 
+  const clearAudio = () => {
+    setAudioFile(null);
+  };
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -114,28 +120,45 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, isLoading = false, disabl
 
   return (
     <div className="w-full max-w-3xl mx-auto px-4 pb-6">
-      {/* Selected image preview */}
+      {/* Selected media previews */}
       <AnimatePresence>
-        {selectedImage && (
+        {(selectedImage || audioFile) && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="mb-3 flex justify-center"
+            className="mb-3 flex justify-center gap-4"
           >
-            <div className="relative inline-block">
-              <img
-                src={selectedImage}
-                alt="Selected"
-                className="h-20 w-auto rounded-xl border border-white/[0.08]"
-              />
-              <button
-                onClick={clearImage}
-                className="absolute -top-2 -right-2 p-1.5 bg-red-500 rounded-full text-white hover:bg-red-600 transition-colors"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </div>
+            {selectedImage && (
+              <div className="relative inline-block">
+                <img
+                  src={selectedImage}
+                  alt="Selected"
+                  className="h-20 w-auto rounded-xl border border-white/[0.08]"
+                />
+                <button
+                  onClick={clearImage}
+                  className="absolute -top-2 -right-2 p-1.5 bg-red-500 rounded-full text-white hover:bg-red-600 transition-colors shadow-lg"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            )}
+
+            {audioFile && (
+              <div className="relative inline-block">
+                <div className="h-20 w-32 bg-[#f4d03f]/10 rounded-xl border border-[#f4d03f]/20 flex flex-col items-center justify-center gap-1 group">
+                  <Mic className="w-6 h-6 text-[#f4d03f]" />
+                  <span className="text-[10px] text-[#f4d03f]/60 font-medium uppercase tracking-wider">{t('voiceNote')}</span>
+                </div>
+                <button
+                  onClick={clearAudio}
+                  className="absolute -top-2 -right-2 p-1.5 bg-red-500 rounded-full text-white hover:bg-red-600 transition-colors shadow-lg"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

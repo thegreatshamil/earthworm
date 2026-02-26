@@ -26,9 +26,9 @@ class ChatRequest(BaseModel):
         description="Unique session identifier",
         examples=["session_abc123"]
     )
-    language: Literal["en", "ta"] = Field(
+    language: Literal["en", "hi", "ta", "te", "kn", "ml", "bn", "mr", "gu", "pa"] = Field(
         default="en",
-        description="Language code: 'en' for English, 'ta' for Tamil",
+        description="Language code for the assistant response",
     )
     
     class Config:

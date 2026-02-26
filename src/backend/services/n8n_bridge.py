@@ -36,7 +36,7 @@ class N8NBridge(AIProvider):
         image_base64: Optional[str],
         audio_file: Optional[str],
         session_id: str,
-        language: Literal["en", "ta"],
+        language: Literal["en", "hi", "ta", "te", "kn", "ml", "bn", "mr", "gu", "pa"],
     ) -> str:
         """
         Forward chat request to n8n webhook.
@@ -87,22 +87,52 @@ class N8NBridge(AIProvider):
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 
                 # If we have an audio file, we MUST send as multipart/form-data
-                # so n8n can parse it as a binary file called 'audio_base64'
+                # Add explicit language instruction to help the AI
+                lang_map = {
+                    "en": "English", "hi": "Hindi", "ta": "Tamil", "te": "Telugu",
+                    "kn": "Kannada", "ml": "Malayalam", "bn": "Bengali",
+                    "mr": "Marathi", "gu": "Gujarati", "pa": "Punjabi"
+                }
+                lang_name = lang_map.get(language, "English")
+                prompt_text = f"{text}\n\n(Please respond ONLY in {lang_name})" if text else f"(Please respond ONLY in {lang_name})"
+
+                # Prepare the payload with double coverage (root + body)
+                # Some n8n setups expect fields at root, others in body
+                common_data = {
+                    "text": prompt_text,
+                    "session_id": session_id,
+                    "language": language,
+                    "image_base64": processed_image,
+                    "audio_file": "true" if cleaned_audio else None,
+                    "has_image": "true" if processed_image else "false",
+                    "has_audio": "true" if cleaned_audio else "false",
+                }
+                
+                # Add body wrapper for those who expect it
+                body_data = {
+                    "text": prompt_text,
+                    "session_id": session_id,
+                    "language": language,
+                    "image_base64": processed_image,
+                    "audio_file": "true" if cleaned_audio else None,
+                }
+
                 if cleaned_audio:
                     # Convert base64 audio back to bytes to send as a file
+                    import base64
                     audio_bytes = base64.b64decode(cleaned_audio)
                     files = {
                         # Name must match what the n8n workflow expects
                         "audio_base64": ("audio.webm", audio_bytes, "audio/webm")
                     }
-                    data = {
-                        "text": text or "",
-                        "session_id": session_id,
-                        "language": language,
-                    }
-                    if processed_image:
-                        data["image_base64"] = processed_image
-                        
+                    # Audio is always sent as multipart/form-data
+                    headers.pop("Content-Type", None)
+                    data = {**common_data}
+                    # Add body fields using body[field] notation
+                    for k, v in body_data.items():
+                        if v is not None:
+                            data[f"body[{k}]"] = v
+
                     response = await client.post(
                         self.webhook_url,
                         data=data,
@@ -110,15 +140,10 @@ class N8NBridge(AIProvider):
                         headers=headers,
                     )
                 else:
-                    # No audio? Plain JSON is fine
                     headers["Content-Type"] = "application/json"
                     payload = {
-                        "text": text,
-                        "image_base64": processed_image,
-                        "session_id": session_id,
-                        "language": language,
-                        "has_image": processed_image is not None,
-                        "has_audio": False
+                        **common_data,
+                        "body": body_data
                     }
                     
                     response = await client.post(
@@ -126,6 +151,13 @@ class N8NBridge(AIProvider):
                         json=payload,
                         headers=headers,
                     )
+                
+                # Log response for debugging
+                import logging
+                log = logging.getLogger("n8n_bridge")
+                log.info(f"n8n response status: {response.status_code}")
+                if response.status_code != 200:
+                    log.error(f"n8n error body: {response.text}")
                 
                 # Handle different response formats
                 if response.status_code == 200:
@@ -182,7 +214,7 @@ class N8NBridge(AIProvider):
         image_base64: Optional[str],
         audio_file: Optional[str],
         session_id: str,
-        language: Literal["en", "ta"],
+        language: Literal["en", "hi", "ta", "te", "kn", "ml", "bn", "mr", "gu", "pa"],
     ):
         """
         Stream chat response from n8n (for future SSE implementation).
