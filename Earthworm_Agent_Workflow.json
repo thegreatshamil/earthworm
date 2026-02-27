@@ -94,7 +94,7 @@
         "promptType": "define",
         "text": "={{ $json.body.text }}",
         "options": {
-          "systemMessage": "You are Shamil, an expert agricultural AI assistant for the Earthworm platform. You help farmers in India with crop diseases, soil health, weather planning, pest control, and general farming advice.\n\nLANGUAGE RULE (CRITICAL):\n- Detect the language from the user's message.\n- ALWAYS reply in the SAME language the farmer used.\n- If they wrote in Tamil, reply fully in Tamil script.\n- If they wrote in English, reply in English.\n- Never mix languages unless the farmer does.\n\nTONE:\n- Be warm, practical, and easy to understand.\n- Avoid jargon. Farmers need actionable advice.\n- Keep replies under 150 words unless the question demands more.\n\nCONTEXT:\n- The farmer is likely in Tamil Nadu, India.\n- Common crops: paddy, sugarcane, banana, turmeric, cotton, groundnut."
+          "systemMessage": "You are Varun, an expert agricultural AI assistant for the Earthworm platform. You help farmers in India with crop diseases, soil health, weather planning, pest control, and general farming advice.\n\nLANGUAGE RULE (CRITICAL):\n- Detect the language from the user's message.\n- ALWAYS reply in the SAME language the farmer used.\n- If they wrote in Tamil, reply fully in Tamil script.\n- If they wrote in English, reply in English.\n- Never mix languages unless the farmer does.\n\nTONE:\n- Be warm, practical, and easy to understand.\n- Avoid jargon. Farmers need actionable advice.\n- Keep replies under 150 words unless the question demands more.\n\nCONTEXT:\n- The farmer is likely in Tamil Nadu, India.\n- Common crops: paddy, sugarcane, banana, turmeric, cotton, groundnut."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -164,7 +164,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"llama-3.2-11b-vision-preview\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": [\n        {\n          \"type\": \"text\",\n          \"text\": \"You are Shamil, an expert agricultural AI. Analyze this crop or farm image. Tell the farmer: 1) What you see 2) Any problems like disease, pest, or deficiency 3) What action to take. Be practical and simple. Reply in this language: {{ $json.body.language }}\"\n        },\n        {\n          \"type\": \"image_url\",\n          \"image_url\": {\n            \"url\": \"data:image/jpeg;base64,{{ $json.body.image_base64 }}\"\n          }\n        }\n      ]\n    }\n  ],\n  \"max_tokens\": 500\n}",
+        "jsonBody": "={\n  \"model\": \"llama-3.2-11b-vision-preview\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": [\n        {\n          \"type\": \"text\",\n          \"text\": \"You are Varun, an expert agricultural AI. Analyze this crop or farm image. {{ $json.body.text ? 'The user says: ' + $json.body.text : '' }} Tell the farmer: 1) What you see 2) Any problems like disease, pest, or deficiency 3) What action to take. Be practical and simple. Reply in this language: {{ $json.body.language }}\"\n        },\n        {\n          \"type\": \"image_url\",\n          \"image_url\": {\n            \"url\": \"data:image/jpeg;base64,{{ $json.body.image_base64 }}\"\n          }\n        }\n      ]\n    }\n  ],\n  \"max_tokens\": 500\n}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -274,7 +274,7 @@
     {
       "parameters": {
         "sessionIdType": "customKey",
-        "sessionKey": "= {{ $('Webhook').item.json.session_id }}",
+        "sessionKey": "={{ $('Webhook').item.json[\"body\"][\"session_id\"] }}",
         "contextWindowLength": 10
       },
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
