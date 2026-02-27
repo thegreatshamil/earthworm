@@ -126,6 +126,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ onPageChange: _onPageChange }) => {
       updatedAt: new Date(),
     };
     setCurrentSession(newSession);
+    setShowHistory(false); // Close sidebar on mobile/tablet for better 'opening' feel
   }, [t]);
 
   const handleSelectSession = useCallback((sessionId: string) => {
@@ -357,11 +358,12 @@ const ChatPage: React.FC<ChatPageProps> = ({ onPageChange: _onPageChange }) => {
         <div className="flex-1 overflow-y-auto">
           <AnimatePresence mode="popLayout">
             {isNewChat ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="h-full flex flex-col items-center justify-center px-6"
-              >
+                <motion.div
+                  key={currentSession.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="h-full flex flex-col items-center justify-center px-6"
+                >
                 {/* Varun AI Greeting */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
