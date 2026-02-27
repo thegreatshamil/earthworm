@@ -8,22 +8,3 @@
     "restartPolicyType": "ON_FAILURE"
   }
 }
-```
-
----
-
-## Also check your repo structure
-
-Go to `github.com/thegreatshamil/earthworm` and tell me — is `main.py` in the **root** of the repo or inside a subfolder? 
-
-Because if your structure is like:
-```
-earthworm/
-  app/
-    main.py        ← inside app folder
-  requirements.txt
-```
-
-Then the start command needs to be:
-```
-uvicorn app.main:app --host 0.0.0.0 --port $PORT
