@@ -11,7 +11,7 @@ class ChatService {
   }
 
   private generateSessionId(): string {
-    return "session_" + Math.random().toString(36).substring(2, 15);
+    return "earthworm_" + Date.now() + "_" + Math.random().toString(36).substring(2, 9);
   }
 
   getSessionId(): string {

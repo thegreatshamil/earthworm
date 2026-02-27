@@ -94,7 +94,15 @@ class N8NBridge(AIProvider):
                     "mr": "Marathi", "gu": "Gujarati", "pa": "Punjabi"
                 }
                 lang_name = lang_map.get(language, "English")
-                prompt_text = f"{text}\n\n(Please respond ONLY in {lang_name})" if text else f"(Please respond ONLY in {lang_name})"
+                
+                # If no text but has image, add a default prompt for the AI
+                final_text = text
+                if not text and processed_image:
+                    final_text = "Please analyze this agricultural image and provide relevant advice or identification."
+                
+                # Identity instructions
+                identity_prefix = "Your name is Varun, a helpful AI Agricultural Assistant. "
+                prompt_text = f"{identity_prefix}{final_text}\n\n(Please respond ONLY in {lang_name})" if final_text else f"{identity_prefix}(Please respond ONLY in {lang_name})"
 
                 # Prepare the payload with double coverage (root + body)
                 # Some n8n setups expect fields at root, others in body
@@ -156,13 +164,15 @@ class N8NBridge(AIProvider):
                 import logging
                 log = logging.getLogger("n8n_bridge")
                 log.info(f"n8n response status: {response.status_code}")
+                log.info(f"n8n raw body: {response.text[:200]}...") # Log first 200 chars
                 if response.status_code != 200:
-                    log.error(f"n8n error body: {response.text}")
+                    log.error(f"n8n error: {response.text}")
                 
                 # Handle different response formats
                 if response.status_code == 200:
                     try:
                         data = response.json()
+                        log.info(f"n8n response keys: {list(data[0].keys()) if isinstance(data, list) and len(data) > 0 else list(data.keys()) if isinstance(data, dict) else 'none'}")
                         
                         # Handle array response (common in n8n)
                         if isinstance(data, list) and len(data) > 0:

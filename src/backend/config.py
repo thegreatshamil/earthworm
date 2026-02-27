@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     # Image processing settings
     max_image_width: int = 1920
     max_image_height: int = 1080
-    image_quality: int = 85
+    image_quality: int = 60
     
     @property
     def cors_origins(self) -> List[str]:
