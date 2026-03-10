@@ -153,14 +153,16 @@ async def chat(request: ChatRequest):
         )
         
     except Exception as e:
-        logger.error(f"Chat error: {e}")
+        import traceback
+        logger.error(f"Chat error: {type(e).__name__}: {e}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
         
         # Return user-friendly error message
         error_message = str(e)
         if "n8n" in error_message.lower() or "webhook" in error_message.lower():
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="AI service is temporarily unavailable. Please try again later.",
+                detail=f"AI service is temporarily unavailable: {error_message}",
             )
         elif "timeout" in error_message.lower():
             raise HTTPException(
@@ -170,7 +172,7 @@ async def chat(request: ChatRequest):
         else:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An error occurred while processing your request.",
+                detail=f"An error occurred: {error_message}",
             )
 
 

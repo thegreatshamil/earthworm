@@ -125,6 +125,11 @@ class N8NBridge(AIProvider):
                     "audio_file": "true" if cleaned_audio else None,
                 }
 
+                # Log request for debugging
+                import logging
+                logger = logging.getLogger("n8n_bridge")
+                logger.debug(f"Connecting to n8n webhook: {self.webhook_url}")
+                
                 if cleaned_audio:
                     # Convert base64 audio back to bytes to send as a file
                     import base64
@@ -141,6 +146,7 @@ class N8NBridge(AIProvider):
                         if v is not None:
                             data[f"body[{k}]"] = v
 
+                    logger.info(f"Sending multipart request to n8n: {self.webhook_url}")
                     response = await client.post(
                         self.webhook_url,
                         data=data,
@@ -154,6 +160,7 @@ class N8NBridge(AIProvider):
                         "body": body_data
                     }
                     
+                    logger.info(f"Sending JSON request to n8n: {self.webhook_url}")
                     response = await client.post(
                         self.webhook_url,
                         json=payload,
@@ -161,18 +168,17 @@ class N8NBridge(AIProvider):
                     )
                 
                 # Log response for debugging
-                import logging
-                log = logging.getLogger("n8n_bridge")
-                log.info(f"n8n response status: {response.status_code}")
-                log.info(f"n8n raw body: {response.text[:200]}...") # Log first 200 chars
+                logger.info(f"n8n response status: {response.status_code}")
+                logger.debug(f"n8n raw body: {response.text[:200]}...") # Log first 200 chars
                 if response.status_code != 200:
-                    log.error(f"n8n error: {response.text}")
+                    logger.error(f"n8n error: {response.text}")
                 
                 # Handle different response formats
                 if response.status_code == 200:
                     try:
                         data = response.json()
-                        log.info(f"n8n response keys: {list(data[0].keys()) if isinstance(data, list) and len(data) > 0 else list(data.keys()) if isinstance(data, dict) else 'none'}")
+                        logger.info(f"n8n response keys: {list(data[0].keys()) if isinstance(data, list) and len(data) > 0 else list(data.keys()) if isinstance(data, dict) else 'none'}")
+
                         
                         # Handle array response (common in n8n)
                         if isinstance(data, list) and len(data) > 0:
@@ -198,7 +204,13 @@ class N8NBridge(AIProvider):
                         # If not JSON, return raw text
                         return response.text
                 else:
+                    if response.status_code == 404:
+                        raise Exception(
+                            "n8n webhook not found (404). Please open http://localhost:5678, "
+                            "find the Earthworm workflow, and toggle it to Active."
+                        )
                     raise Exception(f"n8n returned status {response.status_code}: {response.text}")
+
                     
         except httpx.TimeoutException:
             raise Exception("Request to n8n timed out. The AI service may be busy.")

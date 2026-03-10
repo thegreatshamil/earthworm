@@ -31,7 +31,7 @@ class AIProvider(ABC):
         image_base64: Optional[str],
         audio_file: Optional[str],
         session_id: str,
-        language: Literal["en", "ta"],
+        language: Literal["en", "hi", "ta", "te", "kn", "ml", "bn", "mr", "gu", "pa"],
     ) -> str:
         """
         Send a chat request to the AI provider.
@@ -107,7 +107,7 @@ class MockAIProvider(AIProvider):
         image_base64: Optional[str],
         audio_file: Optional[str],
         session_id: str,
-        language: Literal["en", "ta"],
+        language: Literal["en", "hi", "ta", "te", "kn", "ml", "bn", "mr", "gu", "pa"],
     ) -> str:
         """Return a mock response."""
         responses = {
