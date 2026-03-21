@@ -24,7 +24,12 @@ const LoginPage: React.FC<LoginPageProps> = ({ onPageChange }) => {
       await login(email, password);
       onPageChange('home');
     } catch (err: any) {
-      setError(err.message || 'Failed to login');
+      console.error('Login error:', err);
+      if (err.code === 'auth/invalid-credential') {
+        setError('Invalid email or password. If you don\'t have an account, please sign up below.');
+      } else {
+        setError(err.message || 'Failed to login');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -194,12 +199,16 @@ const LoginPage: React.FC<LoginPageProps> = ({ onPageChange }) => {
           transition={{ delay: 0.5 }}
           className="mt-6 text-center"
         >
+          <div className="mb-2 text-white/20 text-xs italic">
+            Stuck? Use dev mode to bypass login for now:
+          </div>
           <button
             onClick={handleDevSkip}
             className="
               inline-flex items-center gap-2
-              px-4 py-2 text-white/40 text-sm
-              hover:text-[#f4d03f] transition-colors
+              px-4 py-2 bg-white/5 border border-white/10 rounded-lg
+              text-[#f4d03f] text-sm font-medium
+              hover:bg-white/10 transition-colors
             "
           >
             <Code className="w-4 h-4" />
