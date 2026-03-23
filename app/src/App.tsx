@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { LanguageProvider } from '@/context/LanguageContext';
 import Navbar from '@/components/navbar/Navbar';
+import SunflowerField from '@/components/sunflower/SunflowerField';
 import HomePage from '@/pages/HomePage';
 import ChatPage from '@/pages/ChatPage';
 import AccountPage from '@/pages/AccountPage';
@@ -77,7 +78,7 @@ function AppContent() {
   // Show loading state
   if (isLoading) {
     return (
-      <div className="h-screen overflow-hidden bg-[#28282B] flex items-center justify-center">
+      <div className="h-screen overflow-hidden flex items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
@@ -90,24 +91,35 @@ function AppContent() {
   // Show auth pages without navbar
   if (!isAuthenticated) {
     return (
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentPage}
-          variants={pageVariants}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          transition={pageTransition}
-        >
-          {renderPage()}
-        </motion.div>
-      </AnimatePresence>
+      <div className="h-screen overflow-hidden flex flex-col">
+        <div className="fixed inset-0 w-screen h-screen -z-10 overflow-hidden">
+          <SunflowerField />
+        </div>
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentPage}
+            variants={pageVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={pageTransition}
+            className="flex-1 overflow-y-auto"
+          >
+            {renderPage()}
+          </motion.div>
+        </AnimatePresence>
+      </div>
     );
   }
 
   // Show normal app with navbar
   return (
-    <div className="h-screen overflow-hidden bg-[#28282B] text-foreground">
+    <div className="h-screen overflow-hidden flex flex-col text-foreground">
+      <div className="fixed inset-0 w-screen h-screen -z-10 overflow-hidden">
+        <SunflowerField />
+      </div>
+
       {/* Navbar - always visible when authenticated */}
       <Navbar currentPage={currentPage} onPageChange={handlePageChange} />
 
@@ -120,7 +132,7 @@ function AppContent() {
           animate="animate"
           exit="exit"
           transition={pageTransition}
-          className={`${currentPage === 'chat' || currentPage === 'forYou' ? 'pt-20 ' : ''}h-full overflow-hidden`}
+          className="flex-1 overflow-y-auto"
         >
           {renderPage()}
         </motion.div>

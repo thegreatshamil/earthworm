@@ -89,7 +89,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ onPageChange }) => {
   ];
 
   return (
-    <div className="h-screen overflow-hidden bg-[#28282B]">
+    <div className="h-screen overflow-hidden">
       <div className="h-full overflow-y-auto pt-24 px-6 pb-12">
         <div className="max-w-2xl mx-auto">
           {/* Profile Header */}

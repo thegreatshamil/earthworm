@@ -2,7 +2,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
-import SunflowerField from '@/components/sunflower/SunflowerField';
 import WeatherWidget from '@/components/weather/WeatherWidget';
 import LanguageToggle from '@/components/language/LanguageToggle';
 import type { Page } from '@/types';
@@ -15,12 +14,9 @@ const HomePage: React.FC<HomePageProps> = ({ onPageChange }) => {
   const { t } = useLanguage();
 
   return (
-    <div className="relative h-screen overflow-hidden bg-[#28282B]">
-      {/* Sunflower field background */}
-      <SunflowerField />
-
+    <div className="relative min-h-full">
       {/* Content overlay */}
-      <div className="relative z-10 h-full flex flex-col">
+      <div className="relative z-10 min-h-full flex flex-col">
         {/* Spacer for navbar */}
         <div className="h-24" />
 
@@ -93,7 +89,7 @@ const HomePage: React.FC<HomePageProps> = ({ onPageChange }) => {
         </motion.div>
 
         {/* Bottom gradient fade */}
-        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[#28282B] to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[#6b4f10]/55 to-transparent pointer-events-none" />
       </div>
     </div>
   );

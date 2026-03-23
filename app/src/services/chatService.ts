@@ -18,6 +18,10 @@ class ChatService {
     return this.sessionId;
   }
 
+  setSessionId(sessionId: string): void {
+    this.sessionId = sessionId;
+  }
+
   resetSession(): void {
     this.sessionId = this.generateSessionId();
   }

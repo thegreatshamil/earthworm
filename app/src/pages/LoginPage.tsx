@@ -55,7 +55,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onPageChange }) => {
   };
 
   return (
-    <div className="h-screen overflow-hidden bg-[#28282B] flex items-center justify-center px-4">
+    <div className="h-screen overflow-hidden flex items-center justify-center px-4">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-20 w-64 h-64 bg-[#f4d03f]/5 rounded-full blur-3xl" />

@@ -194,7 +194,7 @@ const SitaraPage: React.FC<SitaraPageProps> = ({ onPageChange: _onPageChange }) 
     })();
 
     return (
-        <div className="relative h-screen overflow-hidden bg-[#28282B]">
+        <div className="relative h-screen overflow-hidden">
             <SunflowerField />
 
             <div className="relative z-10 flex flex-col items-center justify-center h-full px-6 pt-16">

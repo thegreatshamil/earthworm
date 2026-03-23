@@ -59,6 +59,13 @@
     scroll-behavior: smooth;
   }
 
+  html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+
   html,
   body,
   #root {
@@ -66,9 +73,10 @@
   }
 
   body {
-    @apply bg-[#28282B] text-foreground antialiased;
+    margin: 0;
+    padding: 0;
+    @apply text-foreground antialiased;
     overflow: hidden;
-    background-attachment: fixed;
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     font-feature-settings: "ss01", "ss02", "cv01";
     letter-spacing: -0.01em;
@@ -111,11 +119,11 @@
   /* Refined Earth-toned gradients */
   .gradient-earth {
     background: linear-gradient(180deg,
-        hsl(38 45% 78%) 0%,
-        hsl(42 55% 72%) 20%,
-        hsl(40 50% 58%) 50%,
-        hsl(35 42% 42%) 75%,
-        hsl(85 22% 25%) 100%);
+        #c8a84b 0%,
+        #b48d32 28%,
+        #a07820 58%,
+        #825f17 80%,
+        #6b4f10 100%);
   }
 
   .gradient-sunset {
