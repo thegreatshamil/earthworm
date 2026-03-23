@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { UserRound, Sparkles, MapPin, Ruler, Sprout } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import SunflowerField from '@/components/sunflower/SunflowerField';
+import GlassPanel from '@/components/ui/GlassPanel';
 import ChatMessage from '@/components/chat/ChatMessage';
 import ChatInput from '@/components/chat/ChatInput';
 import { forYouService } from '@/services/forYouService';
@@ -179,7 +180,7 @@ const ForYouPage: React.FC<ForYouPageProps> = ({ onPageChange: _onPageChange }) 
                     </div>
 
                     {/* Farmer profile inputs */}
-                    <div className="glass rounded-3xl px-4 py-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <GlassPanel className="rounded-3xl px-4 py-4 grid grid-cols-1 md:grid-cols-2 gap-3">
                         {profileFields.map(field => {
                             const Icon = field.icon;
                             const value = profile[field.key];
@@ -213,7 +214,7 @@ const ForYouPage: React.FC<ForYouPageProps> = ({ onPageChange: _onPageChange }) 
                                 </label>
                             );
                         })}
-                    </div>
+                    </GlassPanel>
                     <p className="text-[11px] text-white/60 mt-2">
                         {t('farmerProfileHelper')}
                     </p>

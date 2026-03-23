@@ -6,6 +6,7 @@ import { chatService } from '@/services/chatService';
 import ChatMessage from '@/components/chat/ChatMessage';
 import ChatInput from '@/components/chat/ChatInput';
 import SunflowerField from '@/components/sunflower/SunflowerField';
+import GlassPanel from '@/components/ui/GlassPanel';
 import type { Message, ChatSession, Page } from '@/types';
 
 interface ChatPageProps {
@@ -310,7 +311,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ onPageChange: _onPageChange }) => {
         </AnimatePresence>
 
         {/* Main chat area */}
-        <div className="flex-1 flex flex-col min-w-0 rounded-[32px] border border-white/10 bg-[#171719]/80 backdrop-blur-2xl shadow-2xl shadow-black/40">
+        <GlassPanel className="flex-1 flex flex-col min-w-0 rounded-[32px] bg-[#171719]/80 shadow-2xl shadow-black/40">
           {/* Header */}
           <div className="px-4 sm:px-8 pt-6 pb-5 border-b border-white/10 space-y-4">
             <div className="flex items-center justify-between gap-4">
@@ -354,26 +355,28 @@ const ChatPage: React.FC<ChatPageProps> = ({ onPageChange: _onPageChange }) => {
                   className="min-h-[320px] flex flex-col items-center justify-center"
                 >
                   <motion.div
-                    className="glass-strong max-w-md w-full text-center rounded-3xl px-8 py-10 border border-white/10"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
+                    className="max-w-md w-full text-center mx-auto"
                   >
-                    <motion.div
-                      className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-[#f4d03f]/20 to-[#d4ac0d]/20 flex items-center justify-center"
-                      animate={{
-                        boxShadow: [
-                          '0 0 20px rgba(244, 208, 63, 0.15)',
-                          '0 0 40px rgba(244, 208, 63, 0.35)',
-                          '0 0 20px rgba(244, 208, 63, 0.15)',
-                        ],
-                      }}
-                      transition={{ duration: 3, repeat: Infinity }}
-                    >
-                      <Sprout className="w-10 h-10 text-[#f4d03f]" />
-                    </motion.div>
-                    <h2 className="text-2xl font-bold text-white mb-3">{t('meetVarunAI')}</h2>
-                    <p className="text-white/60 leading-relaxed">{t('varunAIDescription')}</p>
+                    <GlassPanel strong className="rounded-3xl px-8 py-10 border border-white/10">
+                      <motion.div
+                        className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-[#f4d03f]/20 to-[#d4ac0d]/20 flex items-center justify-center"
+                        animate={{
+                          boxShadow: [
+                            '0 0 20px rgba(244, 208, 63, 0.15)',
+                            '0 0 40px rgba(244, 208, 63, 0.35)',
+                            '0 0 20px rgba(244, 208, 63, 0.15)',
+                          ],
+                        }}
+                        transition={{ duration: 3, repeat: Infinity }}
+                      >
+                        <Sprout className="w-10 h-10 text-[#f4d03f]" />
+                      </motion.div>
+                      <h2 className="text-2xl font-bold text-white mb-3">{t('meetVarunAI')}</h2>
+                      <p className="text-white/60 leading-relaxed">{t('varunAIDescription')}</p>
+                    </GlassPanel>
                   </motion.div>
                 </motion.div>
               ) : (
@@ -423,7 +426,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ onPageChange: _onPageChange }) => {
           <div className="px-2 sm:px-6 pb-6 pt-4 border-t border-white/10 bg-black/20 backdrop-blur-xl">
             <ChatInput onSend={handleSend} isLoading={isLoading} />
           </div>
-        </div>
+        </GlassPanel>
       </div>
     </div>
   );
