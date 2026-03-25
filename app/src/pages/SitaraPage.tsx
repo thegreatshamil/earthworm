@@ -58,6 +58,7 @@ const SitaraPage: React.FC<SitaraPageProps> = ({ onPageChange: _onPageChange }) 
     const subtitleScrollRef = useRef<HTMLDivElement | null>(null);
     const shouldAutoScrollRef = useRef(true);
     const isPressingRef = useRef(false);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
 
     const handleSubtitleScroll = useCallback(() => {
         const el = subtitleScrollRef.current;
@@ -209,29 +210,34 @@ const SitaraPage: React.FC<SitaraPageProps> = ({ onPageChange: _onPageChange }) 
     const playAudio = useCallback((base64Audio: string): Promise<void> => {
         return new Promise((resolve, reject) => {
             try {
+                console.log('playAudio called, base64 length:', base64Audio?.length);
                 const binary = atob(base64Audio);
                 const bytes = new Uint8Array(binary.length);
                 for (let i = 0; i < binary.length; i += 1) {
                     bytes[i] = binary.charCodeAt(i);
                 }
 
-                const blob = new Blob([bytes], { type: 'audio/wav' });
+                const blob = new Blob([bytes], { type: 'audio/wav; codecs=1' });
+                console.log('Blob created, size:', blob.size, 'type:', blob.type);
                 const url = URL.createObjectURL(blob);
-                const audio = new Audio(url);
+                audioRef.current = new Audio(url);
+                audioRef.current.preload = 'auto';
 
-                audio.onended = () => {
+                audioRef.current.onended = () => {
                     URL.revokeObjectURL(url);
                     resolve();
                 };
-                audio.onerror = () => {
-                    URL.revokeObjectURL(url);
+                audioRef.current.onerror = () => {
                     reject(new Error('Audio playback failed'));
                 };
 
-                audio.play().catch((err) => {
-                    URL.revokeObjectURL(url);
-                    reject(err);
-                });
+                console.log('Attempting to play audio...');
+                audioRef.current.load();
+                audioRef.current.addEventListener('canplaythrough', () => {
+                    audioRef.current?.play()
+                        .then(() => console.log('Playing'))
+                        .catch(e => console.error('Failed:', e));
+                }, { once: true });
             } catch (err) {
                 reject(err);
             }
